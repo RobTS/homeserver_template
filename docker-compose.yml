@@ -1,0 +1,95 @@
+version: "2"
+services:
+  teamspeak:
+    image: polinux/teamspeak
+    ports:
+      - "9987:9987/udp"
+      - "10011:10011"
+      - "30033:30033"
+    restart: always
+  plex:
+    image: timhaak/plex
+    ports:
+      - "32400:32400"
+    restart: always
+    environment:
+      - PLEX_ALLOWED_NETWORKS=0.0.0.0
+    volumes:
+      - "${MEDIA_PATH}:/media:ro"
+    volumes_from:
+      - "plex-data"
+  plex-data:
+    image: busybox
+    volumes:
+      - "${CONFIG_PATH}/plex:/config:rw"
+    restart: always
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ${CONFIG_PATH}/prometheus/data:/prometheus-data
+    command:
+      - '-config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    restart: always
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    restart: always
+    volumes_from:
+      - "grafana-data"
+  grafana-data:
+    image: busybox
+    volumes:
+      - "${CONFIG_PATH}/grafana:/var/lib/grafana:rw"
+    restart: always
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+      - "9100:9100"
+    restart: always
+  container-exporter:
+    image: google/cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:rw"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+    restart: always
+  resilio-sync:
+    image: resilio/sync
+    ports:
+      - "55555"
+      - "${RESILIO_PORT}:8888"
+    volumes_from:
+      - "resilio-data"
+  resilio-data:
+    image: busybox
+    volumes:
+      - "${RESILIO_PATH}:/mnt/sync:rw"
+    restart: always
+  tm:
+    image: odarriba/timemachine
+    volumes:
+      - "${TIMEMACHINE_PATH}:/timemachine"
+    ports:
+      - '548:548'
+      - '636:636'
+    environment:
+      AFP_LOGIN: ${TIMEMACHINE_USER}
+      AFP_PASSWORD: ${TIMEMACHINE_PW}
+      AFP_NAME: ${TIMEMACHINE_NAME}
+      AFP_SIZE_LIMIT: ${TIMEMACHINE_SIZE_MBg}
+  route53:
+    image: jacobsanford/route53-dyndns
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_CONNECTION_REGION: ${AWS_REGION}
+      ROUTE53_DOMAIN_A_RECORD: ${ROUTE53_DOMAIN_A_RECORD}
+      ROUTE53_IP_URL: 'http://ip-lookup.net/'
+      ROUTE53_UPDATE_FREQUENCY: 300
