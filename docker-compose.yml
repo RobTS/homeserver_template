@@ -83,7 +83,7 @@ services:
       AFP_LOGIN: ${TIMEMACHINE_USER}
       AFP_PASSWORD: ${TIMEMACHINE_PW}
       AFP_NAME: ${TIMEMACHINE_NAME}
-      AFP_SIZE_LIMIT: ${TIMEMACHINE_SIZE_MBg}
+      AFP_SIZE_LIMIT: ${TIMEMACHINE_SIZE_MB}
   route53:
     image: jacobsanford/route53-dyndns
     environment:
