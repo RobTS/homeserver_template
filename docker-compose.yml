@@ -73,7 +73,7 @@ services:
       - "${RESILIO_PATH}:/mnt/sync:rw"
     restart: always
   tm:
-    image: odarriba/timemachine
+    image: odarriba/timemachine@sha256:728a87123a01afb849ba856584d6c6f069fda6b4d4d390f1a01e95e716de8fa8
     volumes:
       - "${TIMEMACHINE_PATH}:/timemachine"
     ports:
